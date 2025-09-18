@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Card</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: transparent;
+      font-family: Arial, sans-serif;
+    }
+
+    .review-card {
+      width: 320px;
+      border-radius: 12px;
+      background-color: #1c1c1c; /* outer card */
+      padding: 12px;
+      color: white;
+      box-sizing: border-box;
+    }
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .review-header img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .review-content {
+      background-color: #e6e6e6; /* inner box */
+      color: black;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 14px;
+      border: 4px solid #e6e6e6; /* merged border */
+    }
+
+    .review-meta {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="review-card">
+    <div class="review-header">
+      <img src="Map_Icon.png" alt="Map" style="height:22px;vertical-align:middle;"> Review</span>
+      Review
+    </div>
+    <div class="review-content">
+      <div id="review-text">Loading review...</div>
+      <div id="review-meta" class="review-meta"></div>
+    </div>
+  </div>
+
+  <!-- Google Maps Places API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABFA7qyHlUusSFd9dzp9U4-xRp6mfYGZQ&libraries=places"></script>
+  <script>
+    function initReview() {
+      const service = new google.maps.places.PlacesService(document.createElement("div"));
+
+      service.getDetails(
+        {
+          placeId: "ChIJKaojp5LDzRIRF1r68qE-s5I", // <-- apna Place ID yahan daalo
+          fields: ["reviews"]
+        },
+        (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && place.reviews) {
+            // ✅ Only take the first 5 reviews
+            let reviews = place.reviews.slice(0, 5);
+
+            // Filter for reviews with at least 10 words
+            let longReviews = reviews.filter(r => r.text.split(" ").length >= 10);
+
+            let chosenReview;
+            if (longReviews.length > 0) {
+              // Pick highest rated among long reviews
+              chosenReview = longReviews.sort((a, b) => b.rating - a.rating)[0];
+            } else {
+              // If no long review, pick shortest review
+              chosenReview = reviews.sort((a, b) => a.text.length - b.text.length)[0];
+            }
+
+            if (chosenReview) {
+              document.getElementById("review-text").textContent = chosenReview.text;
+              document.getElementById("review-meta").textContent =
+                "⭐".repeat(chosenReview.rating) + " by " + chosenReview.author_name;
+            } else {
+              document.getElementById("review-text").textContent = "No reviews available.";
+              document.getElementById("review-meta").textContent = "";
+            }
+          } else {
+            document.getElementById("review-text").textContent = "Error fetching reviews.";
+            document.getElementById("review-meta").textContent = "";
+          }
+        }
+      );
+    }
+
+    window.onload = initReview;
+  </script>
+</body>
+</html>
